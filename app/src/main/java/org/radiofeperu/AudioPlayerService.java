@@ -1,5 +1,7 @@
 package org.radiofeperu;
 
+import static androidx.core.app.NotificationManagerCompat.*;
+
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -10,14 +12,12 @@ import android.os.IBinder;
 
 import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
-import androidx.core.app.NotificationManagerCompat;
+
 import androidx.media3.common.MediaItem;
 import androidx.media3.exoplayer.ExoPlayer;
 
 public class AudioPlayerService extends Service {
     private ExoPlayer exoPlayer;
-    private NotificationManager notificationManager;
-    private NotificationManagerCompat notificationManagerCompat;
     private static final int NOTIFICATION_ID = 1;
 
     @Override
@@ -25,11 +25,12 @@ public class AudioPlayerService extends Service {
         super.onCreate();
 
         exoPlayer = new ExoPlayer.Builder(this).build();
-        notificationManagerCompat = NotificationManagerCompat.from(this);
 
         // Configura el reproductor y carga el audio
-        long currentTimeMillis = System.currentTimeMillis();
+       long currentTimeMillis = System.currentTimeMillis();
         MediaItem mediaItem = MediaItem.fromUri("https://us1freenew.listen2myradio.com/live.mp3?typeportmount=s1_14690_stream_" + currentTimeMillis);
+        //MediaItem mediaItem = MediaItem.fromUri("http://162.210.192.98:14690/");
+        //MediaItem mediaItem = MediaItem.fromUri("http://us1freenew.listen2myradio.com:14690");
         exoPlayer.setMediaItem(mediaItem);
         exoPlayer.prepare();
     }
@@ -61,7 +62,7 @@ public class AudioPlayerService extends Service {
     private void showNotification() {
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
             NotificationChannel channel = new NotificationChannel("channel_id", "Channel Name", NotificationManager.IMPORTANCE_DEFAULT);
-            notificationManager = getSystemService(NotificationManager.class);
+            NotificationManager notificationManager = getSystemService(NotificationManager.class);
             notificationManager.createNotificationChannel(channel);
         }
 
@@ -70,13 +71,13 @@ public class AudioPlayerService extends Service {
         PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_IMMUTABLE);
 
         // En el servicio cuando se presione el botón de detener
-        Intent stopIntent = new Intent("com.servinuevafm.tutorialradio.ACCION_DETENER_REPRODUCCION");
+        Intent stopIntent = new Intent("org.radiofeperu.ACCION_DETENER_REPRODUCCION");
         PendingIntent stopPendingIntent = PendingIntent.getBroadcast(this, 0, stopIntent, PendingIntent.FLAG_IMMUTABLE);
 
         // Construye la notificación
         Notification notification = new NotificationCompat.Builder(this, "channel_id")
-                .setContentTitle("Reproduciendo Streaming")
-                .setContentText("Tu descripción de la transmisión")
+                .setContentTitle("En vivo \uD83D\uDD0A")
+                .setContentText("Radio Fe - 1220 AM")
                 .setSmallIcon(R.drawable.play)
                 .setContentIntent(pendingIntent)
                 .addAction(android.R.drawable.ic_menu_delete, "Detener", stopPendingIntent)
@@ -89,6 +90,6 @@ public class AudioPlayerService extends Service {
 
     private void stopNotification() {
         stopForeground(true);
-        notificationManagerCompat.from(this).cancel(NOTIFICATION_ID);
+        from(this).cancel(NOTIFICATION_ID);
     }
 }
