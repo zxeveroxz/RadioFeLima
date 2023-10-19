@@ -2,13 +2,16 @@ package org.radiofeperu;
 
 import static androidx.core.app.NotificationManagerCompat.*;
 
+import android.app.AlertDialog;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.IBinder;
+import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
@@ -61,9 +64,24 @@ public class AudioPlayerService extends Service {
 
     private void showNotification() {
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+
+
+
+
             NotificationChannel channel = new NotificationChannel("channel_id", "Channel Name", NotificationManager.IMPORTANCE_DEFAULT);
             NotificationManager notificationManager = getSystemService(NotificationManager.class);
+
+            if (!notificationManager.areNotificationsEnabled()) {
+                Toast.makeText(this, "Para usar esta función, habilita las notificaciones en la configuración de la aplicación.", Toast.LENGTH_LONG).show();
+
+                requestNotificationPermissionAlert();
+
+                return;
+            }
+
             notificationManager.createNotificationChannel(channel);
+
+
         }
 
         // Configura la acción que se abrirá al hacer clic en la notificación
@@ -87,6 +105,14 @@ public class AudioPlayerService extends Service {
         // Muestra la notificación en primer plano
         startForeground(NOTIFICATION_ID, notification);
     }
+
+
+    private void requestNotificationPermissionAlert() {
+        Intent broadcastIntent = new Intent("org.radiofeperu.ACCION_MOSTRAR_ALERTA_NOTIFICACION");
+        sendBroadcast(broadcastIntent);
+    }
+
+
 
     private void stopNotification() {
         stopForeground(true);

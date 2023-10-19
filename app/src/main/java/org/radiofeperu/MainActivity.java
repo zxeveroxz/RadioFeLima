@@ -4,15 +4,19 @@ import static android.webkit.ConsoleMessage.MessageLevel.LOG;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.app.AlertDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.provider.Settings;
 import android.util.Log;
 import android.widget.Switch;
+import android.widget.Toast;
 
 import java.io.IOException;
 import java.util.Timer;
@@ -26,7 +30,7 @@ import okhttp3.Response;
 public class MainActivity extends AppCompatActivity {
 
     // Define una URL de muestra (reemplaza con tu propia URL)
-    private static final String SHOUTCAST_METADATA_URL = "http://us1freenew.listen2myradio.com:14690/index.html";
+    private static final String SHOUTCAST_METADATA_URL = "http://us1freenew.listen2myradio.com:14690";
     private final Handler uiHandler = new Handler(Looper.getMainLooper());
 
     private Timer metadataTimer;
@@ -46,11 +50,21 @@ public class MainActivity extends AppCompatActivity {
                     // La reproducción se ha detenido, cambia el estado del Switch a "apagado"
                     switchStreaming.setChecked(false);
                 }
+                if ("org.radiofeperu.ACCION_MOSTRAR_ALERTA_NOTIFICACION".equals(intent.getAction())) {
+                    // La reproducción se ha detenido, cambia el estado del Switch a "apagado"
+                    //Toast.makeText(context,"Desde el braccast",Toast.LENGTH_LONG).show();
+                    showNotificationPermissionAlert();
+                }
+
             }
         };
         // Registra el BroadcastReceiver para escuchar la acción de detener
         IntentFilter filter = new IntentFilter("org.radiofeperu.ACCION_DETENER_REPRODUCCION");
         registerReceiver(stopReceiver, filter);
+
+        IntentFilter filter2 = new IntentFilter("org.radiofeperu.ACCION_MOSTRAR_ALERTA_NOTIFICACION");
+        registerReceiver(stopReceiver, filter2);
+
 
         switchStreaming.setOnCheckedChangeListener((buttonView, isChecked) -> {
             Intent serviceIntent = new Intent(this, AudioPlayerService.class);
@@ -64,68 +78,26 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        startMetadataUpdateTimer();
     }
 
-    private void startMetadataUpdateTimer() {
-        metadataTimer = new Timer();
-        metadataTimer.scheduleAtFixedRate(new TimerTask() {
-            @Override
-            public void run() {
-                fetchShoutcastMetadata();
-            }
-        }, 0, 20000); // METADATA_UPDATE_INTERVAL es el intervalo en milisegundos
-    }
-
-
-    // Método para obtener los metadatos de Shoutcast
-    private void fetchShoutcastMetadata() {
-        // Crea un cliente OkHttpClient para realizar la solicitud
-        OkHttpClient client = new OkHttpClient();
-        Request request = new Request.Builder()
-                .url(SHOUTCAST_METADATA_URL)
-                .build();
-
-        Log.i("Datos", "inicio");
-
-            try {
-                Response response = client.newCall(request).execute();
-
-                if (response.isSuccessful()) {
-                    String responseString = response.body().string();
-
-                    Log.d("FetchMetadataThread", "Hilo en segundo plano iniciado " );
-
-                    // Analiza los metadatos (esto dependerá del formato real)
-                    // Aquí se hace una suposición simple de que los metadatos están en un formato 'clave=valor'
-                    String[] metadataParts = responseString.split(";");
-                    String songTitle = "";
-                    String streamUrl = "";
-
-                    for (String metadataPart : metadataParts) {
-                        if (metadataPart.contains("StreamTitle=")) {
-                            songTitle = metadataPart.replace("StreamTitle=", "").replace("'", "");
-                        } else if (metadataPart.contains("StreamUrl=")) {
-                            streamUrl = metadataPart.replace("StreamUrl=", "").replace("'", "");
-                        }
+    // Muestra el mensaje y agrega un botón para solicitar permiso
+    private void showNotificationPermissionAlert() {
+        new AlertDialog.Builder(this)
+                .setTitle("Permisos de notificación")
+                .setMessage("Para usar esta función, habilita las notificaciones en la configuración de la aplicación.")
+                .setPositiveButton("Solicitar permiso", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        // Abre la configuración de notificaciones de la aplicación
+                        Intent intent = new Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS);
+                        intent.putExtra(Settings.EXTRA_APP_PACKAGE, getPackageName());
+                        startActivity(intent);
                     }
-
-                    // Actualiza la IU con los metadatos (debes definir TextViews u otros elementos en tu IU)
-                    uiHandler.post(() -> {
-                        // Actualiza tus TextViews con songTitle y streamUrl
-                        //textViewSongTitle.setText(songTitle);
-                        //textViewStreamUrl.setText(streamUrl);
-                        Log.d("FetchMetadataThread", "Hilo en segundo plano iniciado " );
-                    });
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-                //Log.i("Datos", e.getMessage().toString());
-            }
-
-
-
+                })
+                .setNegativeButton("Cancelar", null)
+                .show();
     }
+
+
 
 
         @Override
