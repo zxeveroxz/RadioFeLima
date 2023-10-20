@@ -1,7 +1,11 @@
 package org.radiofeperu;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.app.NotificationManagerCompat;
+import androidx.core.content.ContextCompat;
 
+import android.Manifest;
 import android.app.AlertDialog;
 import android.app.NotificationManager;
 import android.content.BroadcastReceiver;
@@ -9,10 +13,12 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.provider.Settings;
+import android.util.Log;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.ImageView;
@@ -28,12 +34,12 @@ public class MainActivity extends AppCompatActivity {
     private static final String SHOUTCAST_METADATA_URL = "http://us1freenew.listen2myradio.com:14690";
     private final Handler uiHandler = new Handler(Looper.getMainLooper());
 
+    private static final int NOTIFICATION_PERMISSION_REQUEST = 111;
+
     private Timer metadataTimer;
     private Switch switchStreaming;
     private BroadcastReceiver stopReceiver;
-
     private ImageView logoFe;
-
     private WebView web1;
 
 
@@ -75,7 +81,15 @@ public class MainActivity extends AppCompatActivity {
         switchStreaming.setOnCheckedChangeListener((buttonView, isChecked) -> {
             Intent serviceIntent = new Intent(this, AudioPlayerService.class);
             if (isChecked) {
-                startService(serviceIntent);
+
+                if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_NOTIFICATION_POLICY) != PackageManager.PERMISSION_GRANTED) {
+                    // Si no tienes permiso, solicítalo
+                    ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_NOTIFICATION_POLICY}, NOTIFICATION_PERMISSION_REQUEST);
+                }
+
+
+               startService(serviceIntent);
+
                 //AnimationUtil.startPeriodicRotationAnimation(logoFe,1,10);
             } else {
                 stopService(serviceIntent);
@@ -85,6 +99,26 @@ public class MainActivity extends AppCompatActivity {
 
 
         //AnimationUtil.startPeriodicAlphaAnimation(logoFe,5);
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+        // Paso 3: Verificar si los permisos fueron otorgados
+        if (requestCode == NOTIFICATION_PERMISSION_REQUEST) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                // El usuario otorgó el permiso
+                // Toma acciones correspondientes aquí
+                Toast.makeText(this,"esto sale PERMITIDOS "+requestCode,Toast.LENGTH_LONG).show();
+            } else {
+                // El usuario denegó el permiso
+                // Puedes mostrar un mensaje al usuario informándole que la funcionalidad no está disponible sin el permiso
+
+                Toast.makeText(this,"esto sale NO TE ACEPTOOOOOOO "+grantResults[0],Toast.LENGTH_LONG).show();
+                showNotificationPermissionAlert();
+            }
+        }
     }
 
     // Muestra el mensaje y agrega un botón para solicitar permiso
@@ -104,7 +138,7 @@ public class MainActivity extends AppCompatActivity {
                     public void onClick(DialogInterface dialog, int which) {
                         // Cambia el estado del Switch a "apagado"
                         switchStreaming.setChecked(false);
-                        Toast.makeText(getApplicationContext(),"Al no permitir los permisos de notificacion, la repodruccion se detendra en un tiempo corto.", Toast.LENGTH_LONG).show();
+                        //Toast.makeText(getApplicationContext(),"Al no permitir los permisos de notificacion, la repodruccion se detendra en un tiempo corto.", Toast.LENGTH_LONG).show();
                     }
                 })
                 .show();
@@ -126,47 +160,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-    private void checkNotificationPermissionAndStartStreaming(boolean isChecked) {
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
-            NotificationManager notificationManager = getSystemService(NotificationManager.class);
-            if (!notificationManager.areNotificationsEnabled()) {
 
-                Toast.makeText(this, "Para usar esta función, habilita las notificaciones en la configuración de la aplicación.", Toast.LENGTH_LONG).show();
-
-                // Puedes abrir la configuración de notificaciones de la aplicación de esta manera:
-                Intent intent = new Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS);
-                intent.putExtra(Settings.EXTRA_APP_PACKAGE, getPackageName());
-                startActivity(intent);
-
-                // También puedes implementar una solicitud de permiso personalizada aquí.
-                // Por ejemplo, mostrando un diálogo de solicitud de permiso.
-
-                // Luego, puedes manejar la respuesta del usuario para verificar si se concedieron permisos.
-            } else {
-                // Si tienes permiso, puedes iniciar la animación y el servicio.
-                if (isChecked) {
-                    Intent serviceIntent = new Intent(this, AudioPlayerService.class);
-                    startService(serviceIntent);
-                    AnimationUtil.startPeriodicRotationAnimation(logoFe, 1, 10);
-                } else {
-                    // Detener la animación y el servicio si es necesario.
-                    //stopService(serviceIntent);
-                    AnimationUtil.stoptPeriodicRotationAnimation();
-                }
-            }
-        } else {
-            // Android anterior a Oreo, inicia la animación y el servicio directamente.
-            if (isChecked) {
-                Intent serviceIntent = new Intent(this, AudioPlayerService.class);
-                startService(serviceIntent);
-                AnimationUtil.startPeriodicRotationAnimation(logoFe, 1, 10);
-            } else {
-                // Detener la animación y el servicio si es necesario.
-                //stopService(serviceIntent);
-                AnimationUtil.stoptPeriodicRotationAnimation();
-            }
-        }
-    }
 
 }
 /*

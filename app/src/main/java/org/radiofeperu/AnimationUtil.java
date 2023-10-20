@@ -34,7 +34,7 @@ public class AnimationUtil {
         handler.post(runnable);
     }
 
-    public static void stoptPeriodicRotationAnimation(){
+    public static void stopPeriodicRotationAnimation(){
         rotate.cancel();
     }
 
