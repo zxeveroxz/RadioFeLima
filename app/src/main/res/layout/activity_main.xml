@@ -10,39 +10,66 @@
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="@drawable/fondo4"
+        android:background="@drawable/fondox"
+
         tools:context=".MainActivity">
 
         <Switch
             android:id="@+id/switchStreaming"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_height="85dp"
+            android:layout_marginTop="10dp"
             android:scaleX="3"
             android:scaleY="3"
             android:showText="true"
+            android:switchPadding="-25dp"
             android:textAlignment="center"
+            android:textColor="@color/white"
             android:textOff=""
             android:textOn="ON"
-            android:textSize="8sp"
-            android:textStyle="normal"
+            android:textSize="12sp"
+            android:textStyle="normal|bold"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.498"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintVertical_bias="0.149" />
+            app:layout_constraintTop_toBottomOf="@+id/textView"
+            app:layout_constraintVertical_bias="0.025" />
 
         <TextView
+            android:id="@+id/textView"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_height="68dp"
+            android:layout_marginTop="10dp"
             android:text="Radio en Vivo"
+            android:textAlignment="center"
             android:textColor="@color/white"
-            android:textSize="34sp"
+            android:textSize="42sp"
+            android:textStyle="bold"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/logoFe"
+            app:layout_constraintVertical_bias="0.052" />
+
+        <ImageView
+            android:id="@+id/logoFe"
+            android:layout_width="0dp"
+            android:layout_height="230dp"
+            android:layout_marginTop="30dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.0"
+            app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintVertical_bias="0.051" />
+            app:srcCompat="@drawable/fe" />
+
+        <WebView
+            android:id="@+id/webView1"
+            android:layout_width="match_parent"
+            android:layout_height="40dp"
+            android:layout_marginBottom="10dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            tools:layout_editor_absoluteX="1dp" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </LinearLayout>

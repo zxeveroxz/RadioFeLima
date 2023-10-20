@@ -65,23 +65,18 @@ public class AudioPlayerService extends Service {
     private void showNotification() {
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
 
-
-
-
             NotificationChannel channel = new NotificationChannel("channel_id", "Channel Name", NotificationManager.IMPORTANCE_DEFAULT);
+            channel.setSound(null, null); // Establece el sonido como nulo (sin sonido)
+
             NotificationManager notificationManager = getSystemService(NotificationManager.class);
-
+/*
             if (!notificationManager.areNotificationsEnabled()) {
-                Toast.makeText(this, "Para usar esta función, habilita las notificaciones en la configuración de la aplicación.", Toast.LENGTH_LONG).show();
-
+                //Toast.makeText(this, "Para usar esta función, habilita las notificaciones en la configuración de la aplicación.", Toast.LENGTH_LONG).show();
                 requestNotificationPermissionAlert();
-
                 return;
             }
-
+*/
             notificationManager.createNotificationChannel(channel);
-
-
         }
 
         // Configura la acción que se abrirá al hacer clic en la notificación
